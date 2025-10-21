@@ -48,9 +48,8 @@ async def admin_panel_command(message: types.Message):
     logging.info(f"Admin panel accessed by user_id={message.from_user.id}")
     
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📊 Statistika", callback_data="stats")],
-        [InlineKeyboardButton(text="📢 Kanallarni boshqarish", callback_data="manage_channels"),
-         InlineKeyboardButton(text="📣 Reklama yuborish", callback_data="send_ad")],
+        [InlineKeyboardButton(text="➕ Kino qo‘shish", callback_data="add_movie"),InlineKeyboardButton(text="📢 Kanallarni boshqarish", callback_data="manage_channels")],
+        [InlineKeyboardButton(text="📊 Statistika", callback_data="stats"),InlineKeyboardButton(text="📣 Reklama yuborish", callback_data="send_ad")],
         [InlineKeyboardButton(text="👥 Foydalanuvchilarni boshqarish", callback_data="manage_users"),
          InlineKeyboardButton(text="🎬 Kinolarni boshqarish", callback_data="manage_movies")],
         [InlineKeyboardButton(text="✨ Yulduzchalar", callback_data="manage_stars")],
@@ -101,91 +100,43 @@ async def stars_callback(callback:CallbackQuery):
     await callback.message.answer(s)
     if not get_all_ratings:
         await callback.answer("🌟 Yulduzchalar hali qo‘shilmagan. Tez orada bo‘ladi!")
-import random
 
-# Janrlar ro'yxati
-GENRES = ["Drama", "Komediya", "Fantastika", "Sarguzasht", "Qo'rqinchli", "Romantik", "Aksiya"]
-# Yillar ro'yxati
-YEARS = ["2023", "2024", "2025", "2022", "2021", "2019"]
-# Tavsiflar ro'yxati
-DESCRIPTIONS = [
-    "🔥 Eng zo'r yangi kino!",
-    "🎬 Faqat bizning kanalda!",
-    "💎 Tomosha qilishni boy bermang!",
-    "⭐ Bu kinoni hamma kutgan edi!",
-    "🎥 Zavq bilan tomosha qiling!",
-    "🚀 Hayajonli voqealar bilan to‘la film!",
-    "🎞️ Haqiqiy san’at asari!",
-    "💥 Syujet sizni hayratda qoldiradi!",
-    "🌟 Aktyorlar ijrosi ajoyib darajada!",
-    "💣 Hamma bu film haqida gapirmoqda!",
-    "🎭 Drama, hissiyot va hayotiy voqealar bir joyda!",
-    "😱 Har bir lahzasi yurakni tez urdiradi!",
-    "💔 Sevgining, sadoqatning va fojianing hikoyasi!",
-    "😂 Kulgi, kayfiyat va ijobiy hissiyotlar to‘la!",
-    "🕵️ Sirli voqealar sizni o‘ziga tortadi!",
-    "⚡ Film so‘nggacha sizni hayajonda ushlab turadi!",
-    "🧩 Har bir kadrda yashiringan ma’no!",
-    "👑 Bu yilgi eng kutilgan film!",
-    "🌌 Fantastik olamga sayohat qiling!",
-    "🏆 Tanqidchilar tomonidan yuqori baholangan film!",
-    "🕰️ Har bir daqiqasi qimmatli!",
-    "🔥 Adrenalinni his eting!",
-    "🎧 Ajoyib saundtreklar bilan boyitilgan!",
-    "🌹 Romantika va hissiyotlar uyg‘unligi!",
-    "🧠 Fikr o‘yg‘otuvchi va chuqur mazmunga ega film!",
-    "🎯 Hikoya sizni o‘ylantiradi!",
-    "🏝️ Yangi dunyoga eshik ochuvchi sarguzasht!",
-    "💫 Tomosha qilsangiz, afsuslanmaysiz!",
-    "🌍 Dunyo bo‘ylab mashhur bo‘lgan asar asosida!",
-    "🦸 Qahramonlik, kurash va g‘alaba hikoyasi!",
-    "👁️ Kutilmagan burilishlarga tayyor bo‘ling!",
-    "📽️ Har bir sahna – alohida san’at!",
-    "🎉 Oila davrasida tomosha qilish uchun ajoyib tanlov!",
-    "💬 Tomoshabinlardan eng yaxshi izohlar!",
-    "🔥 Trendda bo‘lgan kino!",
-    "🎆 Emotsiyalarga boy film tajribasi!",
-    "🧭 Sarguzasht izlayotganlar uchun maxsus!",
-    "🎡 His-tuyg‘ular karuseli sizni kutmoqda!",
-    "🌈 Har bir daqiqa – zavq va hayajon!",
-    "🪄 Sehrli hikoya sizni o‘ziga rom qiladi!"
-]
+# @admin_router.message(Command("k"))
+# async def add_movie_handler(message: types.Message, state: FSMContext):
+#     logging.info(f"add_movie triggered by user_id={message.from_user.id}")
+
+#     if message.from_user.id not in ADMIN_IDS:
+#         await message.reply("🚫 Faqat adminlar kino qo‘shishi mumkin!")
+#         return
+
+#     # Oxirgi id ni olib, yangi kod tayyorlaymiz
+#     conn = sqlite3.connect(DB_PATH)
+#     c = conn.cursor()
+#     c.execute("SELECT MAX(id) FROM movies")
+#     last_id = c.fetchone()[0] or 0
+#     conn.close()
+
+#     new_code = f"{last_id + 1}"
+#     await state.update_data(code=new_code)
+
+#     # Keyingi bosqichga o‘tamiz
+#     await state.set_state(AddMovieForm.title)
+#     await message.reply(f"🎬 Kino kodi avtomatik berildi: {new_code}\n\n📽 Kino nomini kiriting:")
 
 
-@admin_router.message(Command("k"))
-async def add_movie_handler(message: types.Message, state: FSMContext):
-    logging.info(f"add_movie triggered by user_id={message.from_user.id}")
+@admin_router.callback_query(F.data == "add_movie")
+async def add_movie_manual_handler(callback: types.CallbackQuery, state: FSMContext):
+    logging.info(f"manual_add_movie triggered by user_id={callback.from_user.id}")
 
-    if message.from_user.id not in ADMIN_IDS:
-        await message.reply("🚫 Faqat adminlar kino qo‘shishi mumkin!")
-        return
-
-    # Oxirgi id ni olib, yangi kod tayyorlaymiz
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("SELECT MAX(id) FROM movies")
-    last_id = c.fetchone()[0] or 0
-    conn.close()
-
-    new_code = f"{last_id + 1}"
-    await state.update_data(code=new_code)
-
-    # Keyingi bosqichga o‘tamiz
-    await state.set_state(AddMovieForm.title)
-    await message.reply(f"🎬 Kino kodi avtomatik berildi: {new_code}\n\n📽 Kino nomini kiriting:")
-
-
-@admin_router.message(Command("k1"))
-async def add_movie_manual_handler(message: types.Message, state: FSMContext):
-    logging.info(f"manual_add_movie triggered by user_id={message.from_user.id}")
-
-    if message.from_user.id not in ADMIN_IDS:
-        await message.reply("🚫 Faqat adminlar kino qo‘shishi mumkin!")
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.message.answer("🚫 Faqat adminlar kino qo‘shishi mumkin!")
+        await callback.answer()  # tugma yuklanishini to‘xtatadi
         return
 
     # Kino kodi uchun so‘raymiz
     await state.set_state(AddMovieForm.code)
-    await message.reply("🔢 Iltimos, kino kodini o‘zingiz kiriting (faqat raqam):")
+    await callback.message.answer("🔢 Iltimos, kino kodini o‘zingiz kiriting (faqat raqam):")
+    await callback.answer()
 
 
 @admin_router.message(AddMovieForm.code)
@@ -218,22 +169,43 @@ async def process_manual_movie_code(message: types.Message, state: FSMContext):
 async def process_movie_title(message: Message, state: FSMContext):
     await state.update_data(title=message.text.strip())
 
-    # Tavsifni random tanlaymiz
-    description = random.choice(DESCRIPTIONS)
-    await state.update_data(description=description)
+    # Keyingi bosqich: janr
+    await state.set_state(AddMovieForm.genre)
+    await message.reply("🎭 Kino janrini kiriting (masalan: Drama, Aksiya, Komediya):")
 
-    # Janr va yilni random tanlaymiz
-    genre = random.choice(GENRES)
-    year = random.choice(YEARS)
-    await state.update_data(genre=genre, year=year)
 
-    # Doim bepul
+@admin_router.message(AddMovieForm.genre)
+async def process_movie_genre(message: Message, state: FSMContext):
+    await state.update_data(genre=message.text.strip())
+
+    # Keyingi bosqich: yil
+    await state.set_state(AddMovieForm.year)
+    await message.reply("📅 Kino yilini kiriting (masalan: 2023):")
+
+
+@admin_router.message(AddMovieForm.year)
+async def process_movie_year(message: Message, state: FSMContext):
+    year = message.text.strip()
+    if not year.isdigit() or len(year) != 4:
+        await message.reply("⚠️ Yil 4 xonali raqamda bo‘lishi kerak! Masalan: 2024")
+        return
+    await state.update_data(year=year)
+
+    # Keyingi bosqich: tavsif
+    await state.set_state(AddMovieForm.description)
+    await message.reply("📜 Kino tavsifini kiriting:")
+
+
+@admin_router.message(AddMovieForm.description)
+async def process_movie_description(message: Message, state: FSMContext):
+    await state.update_data(description=message.text.strip())
+
+    # Default qiymat — bepul
     await state.update_data(is_premium=0)
 
-    # Keyingi bosqich: video
+    # Endi video yuborish
     await state.set_state(AddMovieForm.video)
-    await message.reply("🎥 Kino videosini yuboring:")
-
+    await message.reply("🎥 Endi kino videosini yuboring:")
 
 @admin_router.message(AddMovieForm.video, F.content_type == ContentType.VIDEO)
 async def process_movie_video(message: Message, state: FSMContext): 

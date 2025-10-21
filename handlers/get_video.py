@@ -6,7 +6,6 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from config import DB_PATH, BOT_TOKEN, CHANNEL_IDS,ADMIN_IDS
 from database.models import get_movie_by_code, get_all_channels, get_top_movies, add_to_watchlist, set_rating
-# from utils.subscription_check import check_subscription_status, confirm_join
 import sqlite3
 from datetime import datetime
 import re
@@ -14,14 +13,13 @@ import uuid
 from .buttons import movie_buttons
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.types import ChatJoinRequest
-# State for movie code input
+
 class MovieStates(StatesGroup):
     waiting_for_movie_code = State()
 
 
 video_router = Router()
 
-# Helper function to get channel URL
 async def _get_channel_url(bot: Bot, channel_id: str) -> str:
     try:
         if channel_id.startswith("@"):
@@ -51,61 +49,20 @@ async def _show_main_menu(message: Message, username: str, state: FSMContext):
                 InlineKeyboardButton(text="🌟 Oyning TOP filmi", callback_data="oylik_film_tavsiyasi"),
                 InlineKeyboardButton(text="🎲 Tasodifiy 7 kino", callback_data="tasodifiy_kinolar"),
             ],
-            [
-                InlineKeyboardButton(text="📢 Barcha kinolar 📽", url="https://t.me/erotika_kinolar_hikoyalar")
-            ]
+            # [
+                # InlineKeyboardButton(text="📢 Barcha kinolar 📽", url="https://t.me/erotika_kinolar_hikoyalar")
+            # ]
         ]
     )
 
     await message.answer(
-        f"🎬 <b>Sekret KinoBot</b>ga xush kelibsiz, <b>{username}</b>!\n\n"
+        f"🎬 <b>Kino Bot</b>ga xush kelibsiz, <b>{username}</b>!\n\n"
         "📽 Bu yerda siz sirli va noyob kinolarni topasiz — qidiruv, tavsiyalar, maxsus to‘plamlar va boshqa ko‘plab imkoniyatlar sizni kutmoqda!\n\n"
         "🧾 <i>Iltimos, kino kodini yuboring yoki quyidagi menyudan birini tanlang:</i>",
         parse_mode="HTML",
         reply_markup=keyboard
     )
     await state.set_state(MovieStates.waiting_for_movie_code)
-
-# from aiogram import F
-
-# @video_router.message()  # Har qanday xabar
-# async def check_channels_before_any_message(message: Message, state: FSMContext):
-#     bot = Bot(token=BOT_TOKEN)
-#     user_id = message.from_user.id
-#     username = message.from_user.username or "No username"
-#     if user_id in ADMIN_IDS:
-#         return 
-#     channels = get_all_channels()  # [(channel_id, channel_link), ...]
-#     all_joined = True
-#     keyboard = InlineKeyboardMarkup(inline_keyboard=[])
-
-#     for i, (channel_id, channel_link) in enumerate(channels, 1):
-#         if re.match(r"^\d{9,}$", channel_id) and not channel_id.startswith("-100"):
-#             channel_id = f"-100{channel_id}"
-
-#         is_joined = await check_subscription_status(bot, user_id, channel_id)
-#         if not is_joined:
-#             all_joined = False
-#             keyboard.inline_keyboard.append([InlineKeyboardButton(text=f"📢 {i} Kanal", url=channel_link)])
-
-#     if not all_joined:
-#         keyboard.inline_keyboard.append(
-#             [InlineKeyboardButton(text="✅ Obuna bo‘ldim", callback_data="check_subscription")]
-#         )
-#         await message.reply(
-#             "❌ Avval quyidagi kanallarga obuna bo‘ling:",
-#             reply_markup=keyboard
-#         )
-#         return  # bu yerda boshqa handlerlar ishlamaydi
-
-#     current_state = await state.get_state()
-#     if current_state == MovieStates.waiting_for_movie_code.state:
-#         if message.text=='/start':
-#             await _show_main_menu(message, username, state)
-#             return
-#         await _handle_movie_code(message, message.text.strip().upper(), bot)
-#     else:
-#         await _show_main_menu(message, username, state)
 
 async def _handle_movie_code(message: Message, movie_code: str, bot: Bot):
     text = (message.text or "").strip()
@@ -125,13 +82,6 @@ async def _handle_movie_code(message: Message, movie_code: str, bot: Bot):
     movie_id, file_id, title, genre, year, description, is_premium = movie
     user_id = message.from_user.id
 
-    # Check subscription for premium content
-    # is_subscribed = await check_subscription_status(bot, user_id, channel="")
-    # if is_premium and not is_subscribed:
-    #     await message.reply("💎 Bu premium kino! Iltimos, obuna bo‘ling: /buy_subscription")
-    #     return
-
-    # Update statistics
     with sqlite3.connect(DB_PATH) as conn:
         c = conn.cursor()
         c.execute("UPDATE movies SET view_count = view_count + 1 WHERE id = ?", (movie_id,))
@@ -142,7 +92,7 @@ async def _handle_movie_code(message: Message, movie_code: str, bot: Bot):
     caption = f"🎬 <b>{title}</b> ({year})\n🎭 <b>Janr:</b> {genre}\n📝 <b>Tavsif:</b>\n{description}\n\n"
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📢 Barcha kodlar", url="https://t.me/erotika_kinolar_hikoyalar")],
+            # [InlineKeyboardButton(text="📢 Barcha kodlar", url="https://t.me/erotika_kinolar_hikoyalar")],
             [InlineKeyboardButton(text="➕ Watchlist", callback_data=f"watchlist_add_{movie_id}")],
             [
                 InlineKeyboardButton(text="⭐1", callback_data=f"rate_{movie_id}_1"),
@@ -295,15 +245,15 @@ async def handle_movie_code(message: Message, state: FSMContext):
     await _handle_movie_code(message, message.text.strip().upper(), bot)
 
 # Handle join click
-@video_router.callback_query(F.data.startswith("join_"))
-async def handle_join_click(callback: CallbackQuery):
-    bot = Bot(token=BOT_TOKEN)
-    channel_id = callback.data.split("join_")[1]
-    success = await confirm_join(bot, callback.from_user.id, channel_id)
-    await callback.answer(
-        "✅ Join bosilgan deb qayd etildi" if success else "❌ Xatolik yuz berdi",
-        show_alert=True
-    )
+# @video_router.callback_query(F.data.startswith("join_"))
+# async def handle_join_click(callback: CallbackQuery):
+#     bot = Bot(token=BOT_TOKEN)
+#     channel_id = callback.data.split("join_")[1]
+#     # success = await confirm_join(bot, callback.from_user.id, channel_id)
+#     await callback.answer(
+#         "✅ Join bosilgan deb qayd etildi" if success else "❌ Xatolik yuz berdi",
+#         show_alert=True
+#     )
 
 
 
@@ -446,12 +396,17 @@ async def inline_query_handler(inline_query: InlineQuery):
     for movie in movies:
         movie_id, file_id, movie_code, title, genre, year, description, is_premium, view_count = movie
 
+        bot = Bot(token=BOT_TOKEN)
+
+        me = await bot.get_me()
+        bot_username = me.username
+
         btn = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
                         text="🎬 Tomosha qilish",
-                        url=f"https://t.me/Sekret_kinoborbot?start={movie_code}"
+                        url=f"https://t.me/{bot_username}?start={movie_code}"
                     )
                 ]
             ]
@@ -529,7 +484,12 @@ async def show_all_movies(callback_query: CallbackQuery):
         await callback_query.message.answer("📭 Bazada hech qanday kino yo'q.")
         return
 
-    buttons = [[InlineKeyboardButton(text=title, url=f"https://t.me/Sekret_kinoborbot?start={code}")] for title, code in movies]
+    bot = Bot(token=BOT_TOKEN)
+
+    me = await bot.get_me()
+    bot_username = me.username
+
+    buttons = [[InlineKeyboardButton(text=title, url=f"https://t.me/{bot_username}?start={code}")] for title, code in movies]
     markup = InlineKeyboardMarkup(inline_keyboard=buttons)
     await callback_query.message.answer("🎬 Barcha kinolar:", reply_markup=markup)
     await callback_query.answer()
