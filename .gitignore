@@ -1,0 +1,65 @@
+# ===== Python umumiy =====
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+venv/
+env/
+ENV/
+.venv/
+pip-wheel-metadata/
+
+# ===== Django =====
+*.log
+*.pot
+*.pyc
+*.mo
+*.db
+db.sqlite3
+media/
+staticfiles/
+static/
+local_settings.py
+
+# ===== aiogram / telegram bot =====
+*.session
+*.session-journal
+config.json
+config.yaml
+config.ini
+*.log
+bot.log
+
+# ===== IDE fayllari =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== OS fayllari =====
+.DS_Store
+Thumbs.db
+
+# ===== Deployment (AWS / Docker / Gunicorn) =====
+*.pid
+*.sock
+*.env
+.env
+.env.*
+logs/
+gunicorn.log
+supervisord.log
+
+# ===== Backup va boshqa =====
+*.bak
+*.old
+*.orig
+*.tmp
+*.cache/
