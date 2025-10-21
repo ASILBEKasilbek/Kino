@@ -4,7 +4,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from config import DB_PATH, BOT_TOKEN, CHANNEL_IDS,ADMIN_IDS
+from config import DB_PATH, BOT_TOKEN
 from database.models import get_movie_by_code, get_all_channels, get_top_movies, add_to_watchlist, set_rating
 import sqlite3
 from datetime import datetime
@@ -155,15 +155,11 @@ pending_requests = {}
 async def check_subscription_status(bot: Bot, user_id: int, channel_id: str) -> bool:
     try:
         chat_id = str(channel_id).strip()
-
-        # Kanal ID formatlash (-100 bilan bo‘lmasa qo‘shamiz)
         if re.match(r"^\d{9,}$", chat_id) and not chat_id.startswith("-100"):
             chat_id = f"-100{chat_id}"
-        # 1️⃣ Avval pending request bor-yo‘qligini tekshiramiz
         if user_id in pending_requests and chat_id in pending_requests[user_id]:
             return True
-
-        # 2️⃣ Agar yo‘q bo‘lsa oddiy a’zolikni tekshiramiz
+        
         member = await bot.get_chat_member(chat_id=chat_id, user_id=user_id)
         return member.status in ("member", "administrator", "creator")
 
@@ -243,18 +239,6 @@ async def handle_movie_code(message: Message, state: FSMContext):
         await _show_main_menu(message, username, state)
         return
     await _handle_movie_code(message, message.text.strip().upper(), bot)
-
-# Handle join click
-# @video_router.callback_query(F.data.startswith("join_"))
-# async def handle_join_click(callback: CallbackQuery):
-#     bot = Bot(token=BOT_TOKEN)
-#     channel_id = callback.data.split("join_")[1]
-#     # success = await confirm_join(bot, callback.from_user.id, channel_id)
-#     await callback.answer(
-#         "✅ Join bosilgan deb qayd etildi" if success else "❌ Xatolik yuz berdi",
-#         show_alert=True
-#     )
-
 
 
 # 📌 Top 5 kinolar

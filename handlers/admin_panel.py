@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.filters import Command
 from aiogram.enums import ContentType
-from config import ADMIN_IDS, DB_PATH,CHANNEL_ID
+from config import ADMIN_IDS, DB_PATH
 from utils.gamification import Gamification
 from datetime import datetime
 import sqlite3
@@ -207,11 +207,16 @@ async def process_movie_description(message: Message, state: FSMContext):
     await state.set_state(AddMovieForm.video)
     await message.reply("🎥 Endi kino videosini yuboring:")
 
+from aiogram.types import ContentType, Message
+from aiogram import F
+import sqlite3
+
 @admin_router.message(AddMovieForm.video, F.content_type == ContentType.VIDEO)
 async def process_movie_video(message: Message, state: FSMContext): 
     if not message.video:
         await message.reply("⚠️ Iltimos, video yuboring!")
         return
+
     user_data = await state.get_data()
     movie_code = user_data["code"]
     title = user_data["title"]
@@ -220,20 +225,19 @@ async def process_movie_video(message: Message, state: FSMContext):
     year = user_data["year"]
     is_premium = user_data["is_premium"]
 
-    # Kanalga video yuborish
-    sent_msg = await message.bot.send_video(
-        chat_id=CHANNEL_ID,
+    # 🎥 Videoni bot o‘ziga yuboramiz (kanalga emas)
+    sent_msg = await message.answer_video(
         video=message.video.file_id,
-        caption = (
-                f"🎬 {title}\n"
-                f"🔢 Kod: {movie_code}\n"
-                f"📜 {description}\n"
-                f"🎭 {genre} | 📅 {year}"
-            ),
-
+        caption=(
+            f"🎬 {title}\n"
+            f"🔢 Kod: {movie_code}\n"
+            f"📜 {description}\n"
+            f"🎭 {genre} | 📅 {year}"
+        ),
         supports_streaming=True
     )
-    file_id = sent_msg.video.file_id
+
+    file_id = sent_msg.video.file_id  # saqlash uchun file_id olamiz
 
     # 🔵 Bazaga yozish
     conn = sqlite3.connect(DB_PATH)
@@ -244,10 +248,17 @@ async def process_movie_video(message: Message, state: FSMContext):
     """, (file_id, movie_code, title, genre, year, description, is_premium))
     conn.commit()
     conn.close()
+
     gamification = Gamification()
     new_xp = gamification.add_xp(message.from_user.id, "add_movie")
 
-    await message.reply(f"🎉 Kino kanalga yuklandi yana yuklash uchun /admin bosing: {title}\n📊 Yangi XP: {new_xp}")
+    await message.reply(
+        f"✅ Kino botga yuklandi!\n\n"
+        f"🎬 {title}\n"
+        f"📊 Yangi XP: {new_xp}\n\n"
+        f"Yana kino qo‘shish uchun /admin buyrug‘ini bosing."
+    )
+
     await state.clear()
 
 @admin_router.callback_query(F.data == "block_user")
