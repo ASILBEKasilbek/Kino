@@ -74,9 +74,9 @@ def generate_channel_link(channel_id: str) -> str:
 # --- Admin panel buyruq ---
 @channel_manage_router.message(Command("manage_channels"))
 async def manage_channels_command(message: Message):
-    if message.from_user.id not in ADMIN_IDS:
-        await message.reply("🚫 Bu buyruq faqat adminlar uchun!")
-        return
+    # if message.from_user.id not in ADMIN_IDS:
+    #     await message.reply("🚫 Bu buyruq faqat adminlar uchun!")
+    #     return
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[

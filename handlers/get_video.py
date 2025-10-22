@@ -49,9 +49,9 @@ async def _show_main_menu(message: Message, username: str, state: FSMContext):
                 InlineKeyboardButton(text="🌟 Oyning TOP filmi", callback_data="oylik_film_tavsiyasi"),
                 InlineKeyboardButton(text="🎲 Tasodifiy 7 kino", callback_data="tasodifiy_kinolar"),
             ],
-            # [
-                # InlineKeyboardButton(text="📢 Barcha kinolar 📽", url="https://t.me/erotika_kinolar_hikoyalar")
-            # ]
+            [
+                InlineKeyboardButton(text="📢 Barcha kinolar 📽", url="https://t.me/+mv2LMvbnUj82NDIy")
+            ]
         ]
     )
 
@@ -92,7 +92,7 @@ async def _handle_movie_code(message: Message, movie_code: str, bot: Bot):
     caption = f"🎬 <b>{title}</b> ({year})\n🎭 <b>Janr:</b> {genre}\n📝 <b>Tavsif:</b>\n{description}\n\n"
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            # [InlineKeyboardButton(text="📢 Barcha kodlar", url="https://t.me/erotika_kinolar_hikoyalar")],
+            [InlineKeyboardButton(text="📢 Barcha kodlar", url="https://t.me/+mv2LMvbnUj82NDIy")],
             [InlineKeyboardButton(text="➕ Watchlist", callback_data=f"watchlist_add_{movie_id}")],
             [
                 InlineKeyboardButton(text="⭐1", callback_data=f"rate_{movie_id}_1"),
