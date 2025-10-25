@@ -36,6 +36,8 @@ class BroadcastForm(StatesGroup):
 class AdStates(StatesGroup):
     waiting_for_ad = State()
 
+class AddChannel(StatesGroup):
+    link = State()
 
 
 
@@ -53,7 +55,8 @@ async def admin_panel_command(message: types.Message):
         [InlineKeyboardButton(text="👥 Foydalanuvchilarni boshqarish", callback_data="manage_users"),
          InlineKeyboardButton(text="🎬 Kinolarni boshqarish", callback_data="manage_movies")],
         [InlineKeyboardButton(text="✨ Yulduzchalar", callback_data="manage_stars")],
-        [InlineKeyboardButton(text="🎯 Yo‘qolgan kino kodlari", callback_data="missing_movies")],
+        [InlineKeyboardButton(text=" Kanal qo'shish(barcha kanallar)", callback_data="add_all_channel")],
+
     ])
     await message.reply("🎛 Admin paneli:", reply_markup=keyboard)
 
@@ -66,6 +69,36 @@ async def show_missing_movies(callback: types.CallbackQuery):
         formatted = ", ".join(map(str, missing))
         await callback.message.reply(f"🎬 Yo‘qolgan kino kodlari: {formatted}")
     await callback.answer()  # Callback loadingni to‘xtatadi
+
+
+
+# @admin_router.callback_query(F.data == "all1_channels")
+# async def all_channels_callback(callback: types.CallbackQuery):
+#     keyboard = types.InlineKeyboardMarkup(inline_keyboard=[
+#         [types.InlineKeyboardButton(text="➕ Kanal qo‘shish", callback_data="add_all_channel")],
+#     ])
+#     await callback.message.edit_text("📡 Kanal boshqaruvi:", reply_markup=keyboard)
+
+@admin_router.callback_query(F.data == "add_all_channel")
+async def add_channel_start(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.answer("🔗 Kanal linkini kiriting (masalan: https://t.me/example):")
+    await state.set_state(AddChannel.link)
+
+@admin_router.message(AddChannel.link)
+async def add_channel_link(message: types.Message, state: FSMContext):
+    link = message.text.strip()
+    if not link.startswith("http"):
+        await message.answer("🚫 Iltimos, to‘g‘ri link kiriting!")
+        return
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("INSERT INTO all_channels (channel_link) VALUES (?)", (link,))
+    conn.commit()
+    conn.close()
+
+    await message.answer("✅ Kanal muvaffaqiyatli qo‘shildi!")
+    await state.clear()
+
 
 
 @admin_router.callback_query(F.data == "manage_stars")

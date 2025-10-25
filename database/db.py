@@ -170,6 +170,7 @@ def init_db():
             FOREIGN KEY (movie_id) REFERENCES movies(id)
         )
     ''')
+    
 
     # Reyting jadvali
     c.execute('''
@@ -181,6 +182,12 @@ def init_db():
             FOREIGN KEY (user_id) REFERENCES users(user_id),
             FOREIGN KEY (movie_id) REFERENCES movies(id)
         )
+    ''')
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS all_channels (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            channel_link TEXT
+        );
     ''')
 
 

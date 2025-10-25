@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from config import DB_PATH, BOT_TOKEN
-from database.models import get_movie_by_code, get_all_channels, get_top_movies, add_to_watchlist, set_rating
+from database.models import get_movie_by_code, get_all_channels, get_top_movies, add_to_watchlist, set_rating,last_channel
 import sqlite3
 from datetime import datetime
 import re
@@ -50,7 +50,7 @@ async def _show_main_menu(message: Message, username: str, state: FSMContext):
                 InlineKeyboardButton(text="🎲 Tasodifiy 7 kino", callback_data="tasodifiy_kinolar"),
             ],
             [
-                InlineKeyboardButton(text="📢 Barcha kinolar 📽", url="https://t.me/+mv2LMvbnUj82NDIy")
+                InlineKeyboardButton(text="📢 Barcha kinolar 📽", url=f"{last_channel()}")
             ]
         ]
     )
@@ -92,7 +92,7 @@ async def _handle_movie_code(message: Message, movie_code: str, bot: Bot):
     caption = f"🎬 <b>{title}</b> ({year})\n🎭 <b>Janr:</b> {genre}\n📝 <b>Tavsif:</b>\n{description}\n\n"
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📢 Barcha kodlar", url="https://t.me/+mv2LMvbnUj82NDIy")],
+            [InlineKeyboardButton(text="📢 Barcha kodlar", url=f"{last_channel()}")],
             [InlineKeyboardButton(text="➕ Watchlist", callback_data=f"watchlist_add_{movie_id}")],
             [
                 InlineKeyboardButton(text="⭐1", callback_data=f"rate_{movie_id}_1"),

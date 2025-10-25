@@ -2,6 +2,24 @@
 import sqlite3
 from config import DB_PATH
 
+def all_channels_add(channel_id: str, channel_link: str):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("INSERT INTO channels (channel_id, channel_link) VALUES (?, ?)", (channel_id, channel_link))
+    conn.commit()
+    conn.close()
+
+def last_channel():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT channel_link FROM all_channels ORDER BY id DESC LIMIT 1")
+    row = c.fetchone()
+    conn.close()
+
+    if row:
+        return row[0] 
+    return None  
+
 def get_all_channels():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
